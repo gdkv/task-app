@@ -1,3 +1,4 @@
+<?php echo $flashbag->display(); ?>
 <div class="mb-3">
     <ul class="nav justify-content-end">
         <li class="nav-item">
@@ -6,19 +7,19 @@
         <li class="nav-item">
             <a class="nav-link" href="/tasks/index/?order=username&sort=<?php echo ($sort=='ASC'||!$sort?'DESC':'ASC'); ?>">
                 User 
-                <span class="badge badge-secondary"><?php echo ($sort=='ASC'||!$sort?'Z->A':'A->Z'); ?></span>
+                <span class="badge badge-secondary"><?php echo ($sort=='ASC'||!$sort?'Z&#8594;A':'A&#8594;Z'); ?></span>
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link" href="/tasks/index/?order=email&sort=<?php echo ($sort=='ASC'||!$sort?'DESC':'ASC'); ?>">
                 Email 
-                <span class="badge badge-secondary"><?php echo ($sort=='ASC'||!$sort?'Z->A':'A->Z'); ?></span>
+                <span class="badge badge-secondary"><?php echo ($sort=='ASC'||!$sort?'Z&#8594;A':'A&#8594;Z'); ?></span>
             </a>
         </li>
         <li class="nav-item">
             <a class="nav-link" href="/tasks/index/?order=is_closed&sort=<?php echo ($sort=='ASC'||!$sort?'DESC':'ASC'); ?>">
                 Status 
-                <span class="badge badge-secondary"><?php echo ($sort=='ASC'||!$sort?'Cl->Op':'Op->Cl'); ?></span>
+                <span class="badge badge-secondary"><?php echo ($sort=='ASC'||!$sort?'Closed&#8594;Open':'Open&#8594;Closed'); ?></span>
             </a>
         </li>
     </ul>
@@ -34,19 +35,22 @@
                     <div class="card-header bg-warning"><small>Open</small></div>
                 <?php endif; ?>
                 <div class="card-body">
-                <h5 class="card-title">
-                    <?php echo $task['username'];?>
-                    <span class="badge badge-secondary">#<?php echo $task['id'];?></span>
-                </h5>
-                <h6><?php echo $task['email'];?></h6>
-                <small class="text-muted">Date: <?php echo $task['edit_at'];?></small>
-                <p class="card-text">
-                    <?php echo $task['text'];?>
-                </p>
-                <?php if ($USER->isLoggedIn()): ?>
-                    <a href="/tasks/edit/<?php echo $task['id']; ?>" class="card-link">Edit</a>
-                    <a href="/tasks/delete/<?php echo $task['id']; ?>" class="text-danger card-link">Delete</a>
-                <?php endif;?>
+                    <?php if(strtotime($task['created_at']) != strtotime($task['edit_at'])): ?>
+                        <span class="badge badge-success mb-1">Task edited by admin</span>
+                    <?php endif; ?>
+                    <h5 class="card-title">
+                        <?php echo $task['username'];?>
+                        <span class="badge badge-secondary">#<?php echo $task['id'];?></span>
+                    </h5>
+                    <h6><?php echo $task['email'];?></h6>
+                    <small class="text-muted">Date: <?php echo $task['edit_at'];?></small>
+                    <p class="card-text">
+                        <?php echo $task['text'];?>
+                    </p>
+                    <?php if ($USER->isLoggedIn()): ?>
+                        <a href="/tasks/edit/<?php echo $task['id']; ?>" class="card-link">Edit</a>
+                        <a href="/tasks/delete/<?php echo $task['id']; ?>" class="text-danger card-link">Delete</a>
+                    <?php endif;?>
                 </div>
             </div>
         </div>
@@ -57,6 +61,7 @@
     <p>There is no tasks here, try to <a href="/tasks/add/">add one</a> 🚀</p>
 <?php endif;?>
 
+<?php if ($pages > 1): ?>
 <div class="mt-3">
     <nav aria-label="Page navigation example">
     <ul class="pagination">
@@ -71,3 +76,4 @@
     </ul>
     </nav>
 </div>
+<?php endif;?>

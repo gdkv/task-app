@@ -1,6 +1,8 @@
 <?php
     require("../Models/Tasks.php");
+    require("../Models/User.php");
     use \Model\Tasks;
+    use \Model\User;
     use \Core\AbstractController;
 
     class TasksController extends AbstractController
@@ -44,7 +46,7 @@
                 }
 
                 if (empty($errors)){
-                    // validation is OK create new task
+                    // validation is OK, create new task
                     $task = new Tasks();
                     $persist = [
                         'username' => $_POST['username'],
@@ -52,40 +54,64 @@
                         'text' => htmlspecialchars($_POST['text']),
                     ];
                     if ($task->add($persist)) {
+                        $this->msg->info('Task is created 🤟');
                         header("Location: /tasks/index");
                     } 
                 }
             }
 
-            $this->render("Tasks/add.php", ['errors' => $errors]);
+            $this->render("Tasks/add.php", ['errors' => $errors,]);
         }
 
         public function edit($id)
         {
-            $task = new Tasks();
-            $get_task = $task->findById($id);
+            // Voter - only login user can edit
+            if ($this->auth->isLoggedIn()) {
+                $task = new Tasks();
+                $result = $task->findById($id);
 
-            // check if form is post
-            if (isset($_POST["username"])){
-                $persist = [
-                    'username' => $_POST['username'],
-                    'email' => $_POST['email'],
-                    'text' => $_POST['text'],
-                    'is_closed' => (isset($_POST['is_closed'])?'true':'false'),
-                ];
-                if ($task->edit($id, $persist)) {
-                    header("Location: /tasks/index");
-                } 
+                // check if form is post
+                if (isset($_POST["username"])){
+                    $errors = "";
+                    // server validation if JS is not working
+                    if (empty($_POST["username"]) || empty($_POST["text"])) {
+                        $errors .= "Username or task description can not be empty! ";
+                    }
+                    if (filter_var($_POST['email'], FILTER_VALIDATE_EMAIL) === false) {
+                        $errors .= "Email is not valid! ";
+                    }
+
+                    if (empty($errors)){
+                        $persist = [
+                            'username' => $_POST['username'],
+                            'email' => $_POST['email'],
+                            'text' => $_POST['text'],
+                            'is_closed' => (isset($_POST['is_closed'])?'true':'false'),
+                            'is_changed' => strcmp($result['text'], $_POST['text']),
+                        ];
+                        if ($task->edit($id, $persist)) {
+                            $this->msg->warning('OK! task edited 🔥');
+                            header("Location: /tasks/index");
+                        } 
+                    }
+                }
+
+                $this->render("Tasks/edit.php", ['task' => $result, 'errors' => $errors, ]);
+            } else {
+                http_response_code(403);
             }
-
-            $this->render("Tasks/edit.php", ['task' => $get_task, ]);
         }
 
         public function delete($id)
         {
-            $task = new Tasks();
-            if ($task->delete($id)) {
-                header("Location: /tasks/index");
+            if ($this->auth->isLoggedIn()) {
+                $task = new Tasks();
+                if ($task->delete($id)) {
+                    $this->msg->error('OMG! task was deleted 😭');
+                    header("Location: /tasks/index");
+                }
+            } else {
+                http_response_code(403);
             }
         }
     }

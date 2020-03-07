@@ -70,18 +70,21 @@
 
         public function edit($id, $persist)
         {
-            $sql = "UPDATE task SET username = :username, text = :text, email = :email, is_closed = :is_closed, edit_at = :edit_at WHERE id = :id";
+            $sql = "UPDATE task SET username = :username, text = :text, email = :email, is_closed = :is_closed".($persist['is_changed'] ? " ,edit_at = :edit_at" : "")." WHERE id = :id";
             $db = new DB();
             $req = $db->getDb()->prepare($sql);
-
-            return $req->execute([
+            $bindParams = [
                 'id' => $id,
                 'username' => $persist['username'],
                 'text' => $persist['text'],
                 'email' => $persist['email'],
                 'is_closed' => $persist['is_closed'],
-                'edit_at' => date('d.m.Y H:i:s')
-            ]);
+            ];
+            if ($persist['is_changed']) {
+                $bindParams['edit_at'] = date('d.m.Y H:i:s');
+            }
+
+            return $req->execute($bindParams);
         }
 
         public function delete($id)
