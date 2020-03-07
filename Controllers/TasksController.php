@@ -85,7 +85,7 @@
                         $persist = [
                             'username' => $_POST['username'],
                             'email' => $_POST['email'],
-                            'text' => $_POST['text'],
+                            'text' => htmlspecialchars($_POST['text']),
                             'is_closed' => (isset($_POST['is_closed'])?'true':'false'),
                             'is_changed' => strcmp($result['text'], $_POST['text']),
                         ];
